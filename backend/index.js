@@ -6,16 +6,15 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-
 // Path to the data file
-const dataDir = path.join(__dirname, 'data');
-const dataFilePath = path.join(dataDir, 'bills.json');
+const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
+const dataFilePath = process.env.DATA_FILE_PATH || path.join(dataDir, 'bills.json');
 
 // Ensure the data directory exists
 if (!fs.existsSync(dataDir)) {
@@ -66,7 +65,11 @@ app.post('/api/bills', (req, res) => {
         console.error('Error saving data:', err);
         return res.status(500).json({ error: 'Failed to save data.' });
       }
-      res.json({ message: 'Bill(s) added successfully.', bills: newBills });
+      // Ensure that 'bills' is always an array in the response
+      res.json({
+        message: 'Bill(s) added successfully.',
+        bills: Array.isArray(newBills) ? newBills : [newBills],
+      });
     });
   });
 });
@@ -90,17 +93,20 @@ app.put('/api/bills/:id', (req, res) => {
       return res.status(500).json({ error: 'Failed to parse data.' });
     }
 
+    const billIndex = bills.findIndex((bill) => bill.id === billId);
+    if (billIndex === -1) {
+      return res.status(404).json({ error: 'Bill not found.' });
+    }
+
     // Ensure paymentHistory is preserved
-    bills = bills.map((bill) =>
-      bill.id === billId ? { ...bill, ...updatedBill } : bill
-    );
+    bills[billIndex] = { ...bills[billIndex], ...updatedBill };
 
     fs.writeFile(dataFilePath, JSON.stringify(bills, null, 2), (err) => {
       if (err) {
         console.error('Error saving data:', err);
         return res.status(500).json({ error: 'Failed to save data.' });
       }
-      res.json({ message: 'Bill updated successfully.', bill: updatedBill });
+      res.json({ message: 'Bill updated successfully.', bill: bills[billIndex] });
     });
   });
 });
@@ -123,7 +129,12 @@ app.delete('/api/bills/:id', (req, res) => {
       return res.status(500).json({ error: 'Failed to parse data.' });
     }
 
-    bills = bills.filter((bill) => bill.id !== billId);
+    const billIndex = bills.findIndex((bill) => bill.id === billId);
+    if (billIndex === -1) {
+      return res.status(404).json({ error: 'Bill not found.' });
+    }
+
+    bills.splice(billIndex, 1);
 
     fs.writeFile(dataFilePath, JSON.stringify(bills, null, 2), (err) => {
       if (err) {
@@ -143,7 +154,12 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
 });
 
-// Start the server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// Export the app for testing
+module.exports = app;
+
+// Start the server only if this file is run directly
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}

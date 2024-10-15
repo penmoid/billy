@@ -1,0 +1,77 @@
+[
+  {
+    "name": "Monthly Bill 1",
+    "dueDay": "22",
+    "amount": "50",
+    "frequency": "monthly",
+    "transactionType": "Credit/Debit",
+    "autoPay": true,
+    "id": 1728665252987,
+    "paymentHistory": {}
+  },
+  {
+    "name": "Weekly Bill 1",
+    "dueDay": "5",
+    "amount": "151",
+    "frequency": "weekly",
+    "transactionType": "EFT",
+    "autoPay": false,
+    "id": 1728666363866,
+    "paymentHistory": {
+      "1_2024-10-11T07:00:00.000Z": false
+    },
+    "dueDate": "2024-10-11T07:00:00.000Z"
+  },
+  {
+    "name": "Per-Pay-Period Bill 1",
+    "dueDay": "",
+    "amount": "245",
+    "frequency": "biweekly",
+    "transactionType": "EFT",
+    "autoPay": false,
+    "id": 1728666444331,
+    "paymentHistory": {
+      "1_2024-10-23T07:00:00.000Z": true
+    }
+  },
+  {
+    "name": "Monthly Bill 2",
+    "dueDay": "1",
+    "amount": "140",
+    "frequency": "monthly",
+    "transactionType": "Cash",
+    "autoPay": true,
+    "id": 1728666869559,
+    "paymentHistory": {}
+  },
+  {
+    "name": "Test Bill 3",
+    "dueDay": "10",
+    "amount": "150",
+    "frequency": "biweekly",
+    "transactionType": "Credit/Debit",
+    "autoPay": false,
+    "id": 3,
+    "paymentHistory": {}
+  },
+  {
+    "name": "Test Bill 4",
+    "dueDay": "20",
+    "amount": "250",
+    "frequency": "monthly",
+    "transactionType": "Internal Transfer",
+    "autoPay": true,
+    "id": 4,
+    "paymentHistory": {}
+  },
+  {
+    "name": "Test Bill 5",
+    "dueDay": "5",
+    "amount": "300",
+    "frequency": "weekly",
+    "transactionType": "Cash",
+    "autoPay": false,
+    "id": 5,
+    "paymentHistory": {}
+  }
+]
