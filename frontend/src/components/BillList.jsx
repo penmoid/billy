@@ -55,7 +55,8 @@ function BillList({ bills, togglePaid, deleteBill, updateBill, currentPayPeriod 
   const handleTogglePaid = (bill) => {
     if (bill && bill.id) {
       console.log(`Toggling paid status for bill: ${bill.name} (ID: ${bill.id})`);
-      togglePaid(bill.id, bill.dueDate);
+      const canonicalDate = bill.originalDueDate || bill.dueDate;
+      togglePaid(bill.id, canonicalDate);
     } else {
       console.error("Attempted to toggle paid status for a bill without a valid 'id'.", bill);
     }
@@ -76,7 +77,8 @@ function BillList({ bills, togglePaid, deleteBill, updateBill, currentPayPeriod 
   const completedBills = [];
 
   validBills.forEach((bill) => {
-    const dueDate = new Date(bill.dueDate);
+    const canonicalDate = bill.originalDueDate || bill.dueDate;
+    const dueDate = new Date(canonicalDate);
     if (isNaN(dueDate)) {
       console.warn(`Bill "${bill.name}" has an invalid 'dueDate' and will be treated as outstanding.`);
       outstandingBills.push(bill);
@@ -105,7 +107,8 @@ function BillList({ bills, togglePaid, deleteBill, updateBill, currentPayPeriod 
 
   const renderBills = (billsToRender) =>
     billsToRender.map((bill) => {
-      const dueDate = new Date(bill.dueDate);
+      const canonicalDate = bill.originalDueDate || bill.dueDate;
+      const dueDate = new Date(canonicalDate);
       const paymentKey = `${payPeriodIndex}_${dueDate.toISOString()}`;
       const isPaid = bill.paymentHistory && bill.paymentHistory[paymentKey];
 
