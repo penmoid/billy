@@ -8,7 +8,7 @@ import {
 } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 
-export function getPayPeriods(bills, numberOfPeriods = 3) {
+export function getPayPeriods(bills, numberOfPeriods = 3, previousPeriods = 0) {
   const timeZone = 'America/Los_Angeles';
 
   // Initial payday in Pacific Time
@@ -35,8 +35,10 @@ export function getPayPeriods(bills, numberOfPeriods = 3) {
 
   // Generate the pay periods
   const payPeriods = [];
-  for (let i = 0; i < numberOfPeriods; i++) {
-    const periodStart = addDays(initialPayday, (payPeriodIndex + i) * payPeriodLength);
+  const totalPeriods = numberOfPeriods + previousPeriods;
+  const startingIndex = payPeriodIndex - previousPeriods;
+  for (let i = 0; i < totalPeriods; i++) {
+    const periodStart = addDays(initialPayday, (startingIndex + i) * payPeriodLength);
     const periodEnd = addDays(periodStart, payPeriodLength - 1);
 
     // Calculate total amount for this pay period
@@ -78,7 +80,7 @@ export function getPayPeriods(bills, numberOfPeriods = 3) {
     }, 0);
 
     payPeriods.push({
-      index: payPeriodIndex + i,
+      index: startingIndex + i,
       start: periodStart,
       end: periodEnd,
       totalAmount,

@@ -1,7 +1,15 @@
 // src/components/PayPeriodSelector.jsx
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Box, Select, MenuItem, FormControl, InputLabel, ListItemIcon } from '@mui/material';
+import {
+  Box,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  ListItemIcon,
+  Typography,
+} from '@mui/material';
 import { format } from 'date-fns-tz';
 import { getPayPeriods } from '../utils/payPeriodUtils';
 import { formatNumber } from '../utils/numberUtils';
@@ -14,7 +22,7 @@ function PayPeriodSelector({ bills, setPayPeriod }) {
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    const periods = getPayPeriods(bills, 3);
+    const periods = getPayPeriods(bills, 3, 1);
     setPayPeriods(periods);
 
     // On first render, set the selectedIndex to the current pay period
@@ -62,9 +70,13 @@ function PayPeriodSelector({ bills, setPayPeriod }) {
               <ListItemIcon>
                 <DateRangeIcon fontSize="small" />
               </ListItemIcon>
-              {format(period.start, 'MMM dd, yyyy', { timeZone })} -{' '}
-              {format(period.end, 'MMM dd, yyyy', { timeZone })} | $
-              {formatNumber(period.totalAmount)}
+              <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+                <Typography variant="body1">
+                  {format(period.start, 'MMM dd', { timeZone })} -{' '}
+                  {format(period.end, 'MMM dd', { timeZone })}
+                </Typography>
+                <Typography variant="body2">${formatNumber(period.totalAmount)}</Typography>
+              </Box>
             </MenuItem>
           ))}
         </Select>
