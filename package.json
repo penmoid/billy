@@ -7,7 +7,10 @@
     "server": "cd backend && npm start",
     "client": "cd frontend && npm start",
     "install-all": "cd backend && npm install && cd ../frontend && npm install",
-    "build": "cd frontend && npm run build && cd ../backend && npm install"
+    "build": "cd frontend && npm run build && cd ../backend && npm install",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test -- --watchAll=false"
   },
   "devDependencies": {
     "concurrently": "^8.2.0"
