@@ -103,9 +103,10 @@ The backend uses a SQLite database stored at `backend/data/bills.db` by default.
 ## Versioning
 
 This project follows [Semantic Versioning](https://semver.org/). The patch number
-is automatically incremented whenever commits land on the `main` branch. Docker
-images published by our workflow are tagged with the version as well as
-`latest`. A digest check ensures that both tags reference the same image.
+is automatically incremented whenever commits land on the `main` branch. Our
+container publish workflow builds the Docker image, tags it with the new version
+and `latest`, verifies the digests match, then pushes the release commit and tag
+back to the repository.
 
 ## License
 
