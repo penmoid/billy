@@ -26,6 +26,22 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Bump patch version
+        if: github.actor != 'github-actions[bot]'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          npm version patch --no-git-tag-version
+          VERSION=$(node -p "require('./package.json').version")
+          cd backend && npm version $VERSION --no-git-tag-version && cd ..
+          cd frontend && npm version $VERSION --no-git-tag-version && cd ..
+          git add package.json package-lock.json backend/package.json backend/package-lock.json frontend/package.json frontend/package-lock.json
+          git commit -m "chore: release v$VERSION"
+          git tag "v$VERSION"
+          git push origin HEAD:${GITHUB_REF#refs/heads/} --follow-tags
 
       - name: Log in to ghcr.io
         uses: docker/login-action@v2
@@ -55,3 +71,12 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:${{ steps.vars.outputs.VERSION }}
             ghcr.io/${{ github.repository }}:latest
+
+      - name: Verify container digests match
+        run: |
+          version_digest=$(docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ steps.vars.outputs.VERSION }} | grep Digest | head -n1 | awk '{print $2}')
+          latest_digest=$(docker buildx imagetools inspect ghcr.io/${{ github.repository }}:latest | grep Digest | head -n1 | awk '{print $2}')
+          if [ "$version_digest" != "$latest_digest" ]; then
+            echo "Digest mismatch: $version_digest vs $latest_digest"
+            exit 1
+          fi
