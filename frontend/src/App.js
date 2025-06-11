@@ -19,7 +19,13 @@ import { draculaTheme, lightTheme } from './theme'; // Corrected import for name
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import axios from 'axios';
-import { isWithinInterval, compareAsc, isWeekend, addDays, parseISO } from 'date-fns';
+import {
+  isWithinInterval,
+  compareAsc,
+  isWeekend,
+  addDays,
+  parseISO,
+} from 'date-fns';
 import BillList from './components/BillList';
 import BillManager from './components/BillManager';
 import PayPeriodSelector from './components/PayPeriodSelector';
@@ -80,15 +86,24 @@ function App() {
       const paymentKey = `${payPeriodIndex}_${bill.dueDate.toISOString()}`;
       const isPaid = bill.paymentHistory && bill.paymentHistory[paymentKey];
 
+      const originalDueDate = bill.dueDate;
+
       if (
         adjustEFT &&
         bill.transactionType === 'EFT' &&
         !isPaid &&
         isWeekend(bill.dueDate)
       ) {
-        // Move to the following Monday
-        bill.dueDate = addDays(bill.dueDate, 8 - bill.dueDate.getDay());
+        const daysToAdd = bill.dueDate.getDay() === 6 ? 2 : 1;
+        bill = {
+          ...bill,
+          originalDueDate,
+          dueDate: addDays(bill.dueDate, daysToAdd),
+        };
+      } else {
+        bill = { ...bill, originalDueDate };
       }
+
       return bill;
     });
 
