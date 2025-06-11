@@ -19,10 +19,13 @@ COPY backend ./backend
 FROM node:18-slim
 WORKDIR /app
 ENV NODE_ENV=production
+ENV PORT=7864
+ENV TZ=UTC
+RUN apt-get update && apt-get install -y --no-install-recommends tzdata && rm -rf /var/lib/apt/lists/*
 
 # Copy built artifacts and backend
 COPY --from=builder /app/backend ./backend
 COPY --from=builder /app/frontend/build ./frontend/build
 
-EXPOSE 5000
+EXPOSE 7864
 CMD ["node", "backend/index.js"]

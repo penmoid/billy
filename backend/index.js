@@ -6,7 +6,9 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const db = require('./db');
 const app = express();
-const PORT = process.env.PORT || 5000;
+// Set default timezone if TZ env variable is not provided
+process.env.TZ = process.env.TZ || 'UTC';
+const PORT = parseInt(process.env.PORT, 10) || 7864;
 
 // Middleware
 app.use(cors());

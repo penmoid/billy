@@ -22,7 +22,7 @@ Start the backend API and the React client concurrently:
 npm start
 ```
 
-The API listens on port `5000` and the React development server runs on port `3000`. The frontend reads the API base URL from `frontend/baseurl.env` which defaults to `http://localhost:5000`.
+The API listens on port `7864` by default and the React development server runs on port `3000`. The frontend reads the API base URL from `frontend/baseurl.env` which defaults to `http://localhost:7864`.
 
 ## Building for production
 
@@ -31,6 +31,28 @@ npm run build
 ```
 
 This creates the production build of the React app in `frontend/build`.
+
+## Docker deployment
+
+Build the Docker image:
+
+```bash
+docker build -t billy .
+```
+
+Run the container while publishing the port and optionally setting the time zone:
+
+```bash
+docker run -p 7864:7864 \
+  -e PORT=7864 \
+  -e TZ=America/New_York \
+  billy
+```
+
+Available environment variables:
+
+- `PORT` - Port the Express server listens on (default `7864`).
+- `TZ` - Time zone used by the container (default `UTC`).
 
 ## Running tests
 
