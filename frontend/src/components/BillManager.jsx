@@ -56,14 +56,15 @@ function BillManager({ bills, deleteBill, updateBill, addBill }) {
 
   // Sort bills by dueDay in numeric order, secondary sort by amount descending
   const sortedBills = [...bills].sort((a, b) => {
-    const aDue = parseInt(a.dueDay, 10);
-    const bDue = parseInt(b.dueDay, 10);
+    const parsedADue = parseInt(a.dueDay, 10);
+    const parsedBDue = parseInt(b.dueDay, 10);
+    const aDue = isNaN(parsedADue) ? Infinity : parsedADue;
+    const bDue = isNaN(parsedBDue) ? Infinity : parsedBDue;
 
     if (aDue !== bDue) {
-      return aDue - bDue; // Primary sort by dueDay
-    } else {
-      return parseFloat(b.amount) - parseFloat(a.amount); // Secondary sort by amount descending
+      return aDue - bDue; // Primary sort by dueDay, treating missing dueDay as largest value
     }
+    return parseFloat(b.amount) - parseFloat(a.amount); // Secondary sort by amount descending
   });
 
   // Group bills by frequency
