@@ -41,49 +41,52 @@ export function getPayPeriods(bills, numberOfPeriods = 3, previousPeriods = 0) {
     const periodStart = addDays(initialPayday, (startingIndex + i) * payPeriodLength);
     const periodEnd = addDays(periodStart, payPeriodLength - 1);
 
-    // Calculate total amount for this pay period
-    const totalAmount = bills.reduce((sum, bill) => {
-      let billOccurrences = 0;
+    let totalAmount = 0;
+    let outstandingAmount = 0;
 
+    bills.forEach((bill) => {
+      const occurrenceDates = [];
       if (!bill.frequency || bill.frequency === 'monthly') {
         const dueDay = parseInt(bill.dueDay, 10);
-
-        // Generate due dates for both the start month and the next month
         const dueDates = [
           new Date(periodStart.getFullYear(), periodStart.getMonth(), dueDay),
           new Date(periodStart.getFullYear(), periodStart.getMonth() + 1, dueDay),
         ];
-
-        // Count the occurrences of the bill within the pay period
-        billOccurrences = dueDates.filter((dueDate) =>
-          isWithinInterval(dueDate, { start: periodStart, end: periodEnd })
-        ).length;
+        dueDates.forEach((date) => {
+          if (isWithinInterval(date, { start: periodStart, end: periodEnd })) {
+            occurrenceDates.push(date);
+          }
+        });
       } else if (bill.frequency === 'weekly') {
         const dayOfWeek = parseInt(bill.dueDay, 10);
         let currentDate = new Date(periodStart);
         while (currentDate <= periodEnd) {
           if (currentDate.getDay() === dayOfWeek) {
-            billOccurrences += 1;
+            occurrenceDates.push(new Date(currentDate));
           }
           currentDate.setDate(currentDate.getDate() + 1);
         }
       } else if (bill.frequency === 'biweekly') {
-        // Per Pay Period bills occur once per pay period
-        billOccurrences = 1;
+        occurrenceDates.push(new Date(periodEnd));
       }
 
-      if (billOccurrences > 0) {
-        return sum + parseFloat(bill.amount) * billOccurrences;
-      }
+      totalAmount += parseFloat(bill.amount) * occurrenceDates.length;
 
-      return sum;
-    }, 0);
+      occurrenceDates.forEach((dueDate) => {
+        const paymentKey = `${startingIndex + i}_${dueDate.toISOString()}`;
+        const isPaid = bill.paymentHistory && bill.paymentHistory[paymentKey];
+        if (!isPaid) {
+          outstandingAmount += parseFloat(bill.amount);
+        }
+      });
+    });
 
     payPeriods.push({
       index: startingIndex + i,
       start: periodStart,
       end: periodEnd,
       totalAmount,
+      outstandingAmount,
     });
   }
 
