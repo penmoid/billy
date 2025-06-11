@@ -41,9 +41,12 @@ jobs:
         if: github.actor != 'github-actions[bot]'
         id: vars
         run: |
-          echo "VERSION=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
-          echo "MAJOR_TAG=$(node -p 'require(\"./package.json\").version.split(".")[0] + ".x"')" >> "$GITHUB_OUTPUT"
-
+          VERSION=$(node -p "require('./package.json').version")
+          MAJOR_TAG="$(echo "$VERSION" | cut -d. -f1).x"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "MAJOR_TAG=$MAJOR_TAG" >> "$GITHUB_OUTPUT"
+          echo "MAJOR_TAG=$MAJOR_TAG" >> "$GITHUB_ENV"
       - name: Build and push
         if: github.actor != 'github-actions[bot]'
         uses: docker/build-push-action@v5
@@ -52,14 +55,14 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:${{ steps.vars.outputs.VERSION }}
-            ghcr.io/${{ github.repository }}:${{ steps.vars.outputs.MAJOR_TAG }}
+            ghcr.io/${{ github.repository }}:${{ env.VERSION }}
+            ghcr.io/${{ github.repository }}:${{ env.MAJOR_TAG }}
             ghcr.io/${{ github.repository }}:latest
 
       - name: Verify container digests match
         if: github.actor != 'github-actions[bot]'
         run: |
-          version_digest=$(docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ steps.vars.outputs.VERSION }} | grep Digest | head -n1 | awk '{print $2}')
+          version_digest=$(docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ env.VERSION }} | grep Digest | head -n1 | awk '{print $2}')
           latest_digest=$(docker buildx imagetools inspect ghcr.io/${{ github.repository }}:latest | grep Digest | head -n1 | awk '{print $2}')
           if [ "$version_digest" != "$latest_digest" ]; then
             echo "Digest mismatch: $version_digest vs $latest_digest"
@@ -69,8 +72,8 @@ jobs:
       - name: Push release tag
         if: github.actor != 'github-actions[bot]'
         run: |
-          VERSION=${{ steps.vars.outputs.VERSION }}
-          MAJOR_TAG=${{ steps.vars.outputs.MAJOR_TAG }}
+          VERSION=${{ env.VERSION }}
+          MAJOR_TAG=${{ env.MAJOR_TAG }}
           git tag "v$VERSION"
           git tag -f "v$MAJOR_TAG"
           git push origin HEAD:${GITHUB_REF#refs/heads/}
