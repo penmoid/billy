@@ -9,9 +9,10 @@ import {
   InputLabel,
   ListItemIcon,
   Typography,
+  Chip,
 } from '@mui/material';
 import { format } from 'date-fns-tz';
-import { getPayPeriods } from '../utils/payPeriodUtils';
+import { getPayPeriods, calculatePayPeriodIndex } from '../utils/payPeriodUtils';
 import { formatNumber } from '../utils/numberUtils';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 
@@ -20,14 +21,19 @@ function PayPeriodSelector({ bills, setPayPeriod }) {
   const [selectedIndex, setSelectedIndex] = useState('');
   const timeZone = 'America/Los_Angeles';
   const isFirstRender = useRef(true);
+  const currentIndex = calculatePayPeriodIndex(new Date());
 
   useEffect(() => {
     const periods = getPayPeriods(bills, 3, 1);
     setPayPeriods(periods);
 
-    // On first render, set the selectedIndex to the current pay period
+    // On first render, select the current pay period
     if (isFirstRender.current) {
-      if (periods.length > 0) {
+      const currentPeriod = periods.find((p) => p.index === currentIndex);
+      if (currentPeriod) {
+        setSelectedIndex(currentPeriod.index.toString());
+        setPayPeriod([currentPeriod.start, currentPeriod.end]);
+      } else if (periods.length > 0) {
         setSelectedIndex(periods[0].index.toString());
         setPayPeriod([periods[0].start, periods[0].end]);
       }
@@ -36,7 +42,11 @@ function PayPeriodSelector({ bills, setPayPeriod }) {
       // If the selectedIndex is still valid, keep it; otherwise, reset
       const selectedPeriod = periods.find((p) => p.index.toString() === selectedIndex);
       if (!selectedPeriod) {
-        if (periods.length > 0) {
+        const currentPeriod = periods.find((p) => p.index === currentIndex);
+        if (currentPeriod) {
+          setSelectedIndex(currentPeriod.index.toString());
+          setPayPeriod([currentPeriod.start, currentPeriod.end]);
+        } else if (periods.length > 0) {
           setSelectedIndex(periods[0].index.toString());
           setPayPeriod([periods[0].start, periods[0].end]);
         } else {
@@ -45,7 +55,7 @@ function PayPeriodSelector({ bills, setPayPeriod }) {
         }
       }
     }
-  }, [bills, selectedIndex, setPayPeriod]);
+  }, [bills, selectedIndex, setPayPeriod, currentIndex]);
 
   const handleChange = (event) => {
     const index = event.target.value;
@@ -64,21 +74,61 @@ function PayPeriodSelector({ bills, setPayPeriod }) {
           label="Pay Period"
           disabled={payPeriods.length === 0}
           color="primary"
-        >
-          {payPeriods.map((period) => (
-            <MenuItem key={period.index} value={period.index.toString()}>
-              <ListItemIcon>
-                <DateRangeIcon fontSize="small" />
-              </ListItemIcon>
-              <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-                <Typography variant="body1">
-                  {format(period.start, 'MMM dd', { timeZone })} -{' '}
-                  {format(period.end, 'MMM dd', { timeZone })}
-                </Typography>
-                <Typography variant="body2">${formatNumber(period.totalAmount)}</Typography>
+          renderValue={(selected) => {
+            const period = payPeriods.find((p) => p.index.toString() === selected);
+            if (!period) return '';
+            const status =
+              period.index === currentIndex
+                ? 'Current'
+                : period.index < currentIndex
+                ? 'Past'
+                : 'Future';
+            const color =
+              status === 'Current' ? 'success' : status === 'Future' ? 'secondary' : 'default';
+            return (
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <DateRangeIcon fontSize="small" sx={{ mr: 1 }} />
+                <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+                  <Typography variant="body1">
+                    {format(period.start, 'MMM dd', { timeZone })} -{' '}
+                    {format(period.end, 'MMM dd', { timeZone })}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2">${formatNumber(period.totalAmount)}</Typography>
+                    <Chip label={status} color={color} size="small" />
+                  </Box>
+                </Box>
               </Box>
-            </MenuItem>
-          ))}
+            );
+          }}
+        >
+          {payPeriods.map((period) => {
+            const status =
+              period.index === currentIndex
+                ? 'Current'
+                : period.index < currentIndex
+                ? 'Past'
+                : 'Future';
+            const color =
+              status === 'Current' ? 'success' : status === 'Future' ? 'secondary' : 'default';
+            return (
+              <MenuItem key={period.index} value={period.index.toString()}>
+                <ListItemIcon>
+                  <DateRangeIcon fontSize="small" />
+                </ListItemIcon>
+                <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+                  <Typography variant="body1">
+                    {format(period.start, 'MMM dd', { timeZone })} -{' '}
+                    {format(period.end, 'MMM dd', { timeZone })}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2">${formatNumber(period.totalAmount)}</Typography>
+                    <Chip label={status} color={color} size="small" />
+                  </Box>
+                </Box>
+              </MenuItem>
+            );
+          })}
         </Select>
       </FormControl>
     </Box>
