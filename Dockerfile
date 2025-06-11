@@ -1,5 +1,6 @@
 # Build stage
-FROM node:18 AS builder
+ARG NODE_VERSION=18
+FROM node:${NODE_VERSION} AS builder
 WORKDIR /app
 
 # Install backend dependencies
@@ -16,7 +17,7 @@ RUN cd frontend && npm run build
 COPY backend ./backend
 
 # Final stage
-FROM node:18-slim
+FROM node:${NODE_VERSION}-slim
 
 # Runtime user will be created based on UID/GID environment variables
 # provided when the container starts.

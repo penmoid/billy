@@ -100,7 +100,15 @@ cd ../frontend && npm test -- --watchAll=false
 
 The backend uses a SQLite database stored at `backend/data/bills.db` by default. A sample JSON file is provided at `backend/data/bills_example.json` to illustrate the bill format.
 
+## Versioning
+
+This project follows [Semantic Versioning](https://semver.org/). The patch number
+is automatically incremented whenever commits land on the `main` branch. Docker
+images published by our workflow are tagged with the version as well as
+`latest`. A digest check ensures that both tags reference the same image.
+
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file
+for details.
 
