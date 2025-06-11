@@ -1,6 +1,6 @@
 # Billy
 
-Billy is a simple bill tracking application with a Node.js/Express backend and a React frontend. It lets you record recurring bills, group them by pay period and mark payments as completed.
+Billy is a simple bill tracking application with a Node.js/Express backend and a React frontend. It lets you record recurring bills, group them by pay period and mark payments as completed. The backend stores bill information in a lightweight SQLite database.
 
 ## Prerequisites
 
@@ -48,9 +48,9 @@ cd frontend
 npm test -- --watchAll=false
 ```
 
-## Sample data
+## Database
 
-A sample data file is provided at `backend/data/bills_example.json` to illustrate the bill format.
+The backend uses a SQLite database stored at `backend/data/bills.db` by default. A sample JSON file is provided at `backend/data/bills_example.json` to illustrate the bill format.
 
 ## License
 

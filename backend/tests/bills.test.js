@@ -3,10 +3,10 @@
 const request = require('supertest');
 const fs = require('fs');
 const path = require('path');
+let db;
 
-// Define the path to the test data file
 const testDataDir = path.join(__dirname, 'data');
-const testDataFilePath = path.join(testDataDir, 'bills.test.json');
+const testDbPath = path.join(testDataDir, 'bills.test.db');
 
 let app;
 
@@ -16,17 +16,15 @@ beforeAll(() => {
     fs.mkdirSync(testDataDir);
   }
   process.env.DATA_DIR = testDataDir;
-  process.env.DATA_FILE_PATH = testDataFilePath;
+  process.env.DB_PATH = testDbPath;
+  db = require('../db');
 });
 
 beforeEach(() => {
-  // Reset the module registry to ensure a fresh app instance
   jest.resetModules();
-
-  // Import the app after setting environment variables
   app = require('../index');
 
-  // Initialize test data
+  db.exec('DELETE FROM bills');
   const initialData = [
     {
       "name": "Test Bill 1",
@@ -49,20 +47,33 @@ beforeEach(() => {
       "paymentHistory": {}
     }
   ];
-  fs.writeFileSync(testDataFilePath, JSON.stringify(initialData, null, 2));
+  const insert = db.prepare(`INSERT INTO bills (id, name, dueDay, amount, frequency, transactionType, autoPay, paymentHistory, dueDate) VALUES (@id,@name,@dueDay,@amount,@frequency,@transactionType,@autoPay,@paymentHistory,@dueDate)`);
+  const trans = db.transaction((bills) => {
+    for (const b of bills) {
+      insert.run({
+        id: b.id,
+        name: b.name,
+        dueDay: b.dueDay,
+        amount: b.amount,
+        frequency: b.frequency,
+        transactionType: b.transactionType,
+        autoPay: b.autoPay ? 1 : 0,
+        paymentHistory: JSON.stringify(b.paymentHistory || {}),
+        dueDate: b.dueDate || null,
+      });
+    }
+  });
+  trans(initialData);
 });
 
 afterEach(() => {
-  // Remove the test data file after each test
-  if (fs.existsSync(testDataFilePath)) {
-    fs.unlinkSync(testDataFilePath);
-  }
+  db.exec('DELETE FROM bills');
 });
 
 afterAll(() => {
-  // Remove the test data directory after all tests
+  db.close();
   if (fs.existsSync(testDataDir)) {
-    fs.rmSync(testDataDir, { recursive: true, force: true }); // Updated to fs.rmSync to fix deprecation warning
+    fs.rmSync(testDataDir, { recursive: true, force: true });
   }
 });
 
