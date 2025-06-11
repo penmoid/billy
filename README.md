@@ -40,19 +40,40 @@ Build the Docker image:
 docker build -t billy .
 ```
 
-Run the container while publishing the port and optionally setting the time zone:
+Run the container while publishing the port, optionally setting the time zone,
+and mapping a host directory for persistent data:
 
 ```bash
 docker run -p 7864:7864 \
   -e PORT=7864 \
   -e TZ=America/New_York \
+  -v $(pwd)/data:/app/backend/data \
   billy
 ```
+
+This mounts the host `./data` directory to `/app/backend/data` inside the
+container so the SQLite database and any other files placed there survive
+container restarts.
 
 Available environment variables:
 
 - `PORT` - Port the Express server listens on (default `7864`).
 - `TZ` - Time zone used by the container (default `UTC`).
+
+### Docker Compose example
+
+```yaml
+version: '3'
+services:
+  billy:
+    build: .
+    ports:
+      - "7864:7864"
+    environment:
+      - TZ=America/New_York
+    volumes:
+      - ./data:/app/backend/data
+```
 
 ## Running tests
 
