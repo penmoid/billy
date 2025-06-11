@@ -83,18 +83,17 @@ services:
 
 ## Running tests
 
-### Backend
+You can run both the backend and frontend test suites from the project root:
 
 ```bash
-cd backend
 npm test
 ```
 
-### Frontend
+To run them individually:
 
 ```bash
-cd frontend
-npm test -- --watchAll=false
+cd backend && npm test
+cd ../frontend && npm test -- --watchAll=false
 ```
 
 ## Database
