@@ -47,6 +47,8 @@ and mapping a host directory for persistent data:
 docker run -p 7864:7864 \
   -e PORT=7864 \
   -e TZ=America/New_York \
+  -e UID=$(id -u) \
+  -e GID=$(id -g) \
   -v $(pwd)/data:/app/backend/data \
   billy
 ```
@@ -59,6 +61,8 @@ Available environment variables:
 
 - `PORT` - Port the Express server listens on (default `7864`).
 - `TZ` - Time zone used by the container (default `UTC`).
+- `UID` - UID for the `billy` user created at runtime (default `1000`).
+- `GID` - GID for the `billy` group created at runtime (default `1000`).
 
 ### Docker Compose example
 
@@ -71,6 +75,8 @@ services:
       - "7864:7864"
     environment:
       - TZ=America/New_York
+      - UID=${UID:-1000}
+      - GID=${GID:-1000}
     volumes:
       - ./data:/app/backend/data
 ```
