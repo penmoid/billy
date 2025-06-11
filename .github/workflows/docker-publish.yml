@@ -41,7 +41,8 @@ jobs:
         if: github.actor != 'github-actions[bot]'
         id: vars
         run: |
-          echo "VERSION=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
+          echo "MAJOR_TAG=$(node -p 'require(\"./package.json\").version.split(".")[0] + ".x"')" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
         if: github.actor != 'github-actions[bot]'
@@ -52,6 +53,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:${{ steps.vars.outputs.VERSION }}
+            ghcr.io/${{ github.repository }}:${{ steps.vars.outputs.MAJOR_TAG }}
             ghcr.io/${{ github.repository }}:latest
 
       - name: Verify container digests match
@@ -68,6 +70,9 @@ jobs:
         if: github.actor != 'github-actions[bot]'
         run: |
           VERSION=${{ steps.vars.outputs.VERSION }}
+          MAJOR_TAG=${{ steps.vars.outputs.MAJOR_TAG }}
           git tag "v$VERSION"
+          git tag -f "v$MAJOR_TAG"
           git push origin HEAD:${GITHUB_REF#refs/heads/}
           git push origin "v$VERSION"
+          git push origin -f "v$MAJOR_TAG"
