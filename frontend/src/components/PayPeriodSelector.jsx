@@ -94,7 +94,7 @@ function PayPeriodSelector({ bills, setPayPeriod }) {
                     {format(period.end, 'MMM dd', { timeZone })}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="body2">${formatNumber(period.totalAmount)}</Typography>
+                    <Typography variant="body2">${formatNumber(period.outstandingAmount)}</Typography>
                     <Chip label={status} color={color} size="small" />
                   </Box>
                 </Box>
@@ -122,7 +122,7 @@ function PayPeriodSelector({ bills, setPayPeriod }) {
                     {format(period.end, 'MMM dd', { timeZone })}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="body2">${formatNumber(period.totalAmount)}</Typography>
+                    <Typography variant="body2">${formatNumber(period.outstandingAmount)}</Typography>
                     <Chip label={status} color={color} size="small" />
                   </Box>
                 </Box>
