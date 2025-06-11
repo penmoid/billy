@@ -91,6 +91,7 @@ function App() {
       if (
         adjustEFT &&
         bill.transactionType === 'EFT' &&
+        bill.autoPay &&
         !isPaid &&
         isWeekend(bill.dueDate)
       ) {
