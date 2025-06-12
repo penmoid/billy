@@ -109,7 +109,10 @@ and `latest`, verifies the digests match, then pushes the release commit and tag
 back to the repository.
 
 Commits pushed to the `dev` branch trigger a similar workflow that builds the
-container and pushes images tagged `dev` and `dev-<commit>` for testing.
+container and pushes images tagged `dev` and `dev-<commit>` for testing. This
+workflow only runs if `.github/workflows/docker-publish-dev.yml` exists in the
+`dev` branch, so ensure that file is present (for example by merging main) when
+pushing to `dev`.
 
 ## License
 
