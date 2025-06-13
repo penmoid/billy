@@ -2,14 +2,15 @@
 ARG NODE_VERSION=18
 FROM node:${NODE_VERSION} AS builder
 WORKDIR /app
+COPY .npmrc .
 
 # Install backend dependencies
 COPY backend/package*.json ./backend/
-RUN cd backend && npm install --production
+RUN cd backend && npm ci --production
 
 # Build frontend
 COPY frontend/package*.json ./frontend/
-RUN cd frontend && npm install
+RUN cd frontend && npm ci
 COPY frontend ./frontend
 RUN cd frontend && npm run build
 
