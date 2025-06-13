@@ -13,6 +13,6 @@
     "test:frontend": "cd frontend && npm test -- --watchAll=false"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
+    "concurrently": "^9.1.2"
   }
 }
