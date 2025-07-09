@@ -1,6 +1,6 @@
 {
   "name": "bill-tracker-app",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "private": true,
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
