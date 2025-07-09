@@ -18,6 +18,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { draculaTheme, lightTheme } from './theme'; // Corrected import for named exports
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import SettingsIcon from '@mui/icons-material/Settings';
 import axios from 'axios';
 import {
   isWithinInterval,
@@ -30,6 +31,7 @@ import BillList from './components/BillList';
 import BillManager from './components/BillManager';
 import PayPeriodSelector from './components/PayPeriodSelector';
 import { calculatePayPeriodIndex } from './utils/payPeriodUtils';
+import SettingsDialog from './components/SettingsDialog';
 
 function App() {
   const [bills, setBills] = useState([]);
@@ -38,6 +40,10 @@ function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [adjustEFT, setAdjustEFT] = useState(true);
   const [sortOption, setSortOption] = useState('date');
+  const [title, setTitle] = useState('Billy');
+  const [pastPeriods, setPastPeriods] = useState(1);
+  const [futurePeriods, setFuturePeriods] = useState(4);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   /**
    * Function to filter and sort bills based on current state.
@@ -162,6 +168,35 @@ function App() {
     setDarkMode(savedTheme);
   }, []);
 
+  // Initialize app settings from localStorage
+  useEffect(() => {
+    const savedTitle = localStorage.getItem('appTitle') || 'Billy';
+    const savedPast = parseInt(localStorage.getItem('pastPeriods') || '1', 10);
+    const savedFuture = parseInt(
+      localStorage.getItem('futurePeriods') || '4',
+      10
+    );
+    setTitle(savedTitle);
+    setPastPeriods(savedPast);
+    setFuturePeriods(savedFuture);
+    document.title = savedTitle;
+  }, []);
+
+  // Persist title changes
+  useEffect(() => {
+    document.title = title;
+    localStorage.setItem('appTitle', title);
+  }, [title]);
+
+  // Persist pay period settings
+  useEffect(() => {
+    localStorage.setItem('pastPeriods', pastPeriods);
+  }, [pastPeriods]);
+
+  useEffect(() => {
+    localStorage.setItem('futurePeriods', futurePeriods);
+  }, [futurePeriods]);
+
   /**
    * Handler to toggle theme mode and persist the preference.
    */
@@ -170,6 +205,14 @@ function App() {
       localStorage.setItem('darkMode', !prevMode);
       return !prevMode;
     });
+  };
+
+  const handleOpenSettings = () => setSettingsOpen(true);
+  const handleCloseSettings = () => setSettingsOpen(false);
+  const handleSaveSettings = ({ title, pastPeriods, futurePeriods }) => {
+    setTitle(title);
+    setPastPeriods(pastPeriods);
+    setFuturePeriods(futurePeriods);
   };
 
   /**
@@ -283,24 +326,37 @@ function App() {
     <ThemeProvider theme={darkMode ? draculaTheme : lightTheme}>
       <CssBaseline />
       <Container maxWidth="md" sx={{ padding: 4 }}>
-        {/* Theme Toggle Icon Button */}
-        <IconButton
-          sx={{ float: 'right' }}
-          color="inherit"
-          onClick={handleThemeToggle}
-          aria-label="toggle dark mode"
-        >
-          {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-        </IconButton>
+        {/* Theme & Settings Buttons */}
+        <Box sx={{ float: 'right' }}>
+          <IconButton
+            color="inherit"
+            onClick={handleThemeToggle}
+            aria-label="toggle dark mode"
+          >
+            {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
+          <IconButton
+            color="inherit"
+            onClick={handleOpenSettings}
+            aria-label="settings"
+          >
+            <SettingsIcon />
+          </IconButton>
+        </Box>
 
         {/* Application Title */}
         <Typography variant="h4" align="center" gutterBottom>
-          Billy
+          {title}
         </Typography>
 
         {/* Pay Period Selector */}
         <Box my={4}>
-          <PayPeriodSelector bills={bills} setPayPeriod={setPayPeriod} />
+          <PayPeriodSelector
+            bills={bills}
+            setPayPeriod={setPayPeriod}
+            pastPeriods={pastPeriods}
+            futurePeriods={futurePeriods}
+          />
         </Box>
 
         {/* Sorting Options */}
@@ -350,6 +406,17 @@ function App() {
           deleteBill={deleteBill}
           updateBill={updateBill}
           addBill={addBill}
+        />
+
+        <SettingsDialog
+          open={settingsOpen}
+          onClose={handleCloseSettings}
+          settings={{
+            title,
+            pastPeriods,
+            futurePeriods,
+          }}
+          saveSettings={handleSaveSettings}
         />
       </Container>
     </ThemeProvider>
