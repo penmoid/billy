@@ -168,18 +168,45 @@ function App() {
     setDarkMode(savedTheme);
   }, []);
 
-  // Initialize app settings from localStorage
+  // Initialize app settings from server with localStorage fallback
   useEffect(() => {
-    const savedTitle = localStorage.getItem('appTitle') || 'Billy';
-    const savedPast = parseInt(localStorage.getItem('pastPeriods') || '1', 10);
-    const savedFuture = parseInt(
-      localStorage.getItem('futurePeriods') || '4',
-      10
-    );
-    setTitle(savedTitle);
-    setPastPeriods(savedPast);
-    setFuturePeriods(savedFuture);
-    document.title = savedTitle;
+    axios
+      .get('/api/settings')
+      .then((response) => {
+        const data = response.data || {};
+        const fetchedTitle =
+          data.title || localStorage.getItem('appTitle') || 'Billy';
+        const fetchedPast = parseInt(
+          data.pastPeriods || localStorage.getItem('pastPeriods') || '1',
+          10
+        );
+        const fetchedFuture = parseInt(
+          data.futurePeriods || localStorage.getItem('futurePeriods') || '4',
+          10
+        );
+        setTitle(fetchedTitle);
+        setPastPeriods(fetchedPast);
+        setFuturePeriods(fetchedFuture);
+        document.title = fetchedTitle;
+        localStorage.setItem('appTitle', fetchedTitle);
+        localStorage.setItem('pastPeriods', fetchedPast);
+        localStorage.setItem('futurePeriods', fetchedFuture);
+      })
+      .catch(() => {
+        const savedTitle = localStorage.getItem('appTitle') || 'Billy';
+        const savedPast = parseInt(
+          localStorage.getItem('pastPeriods') || '1',
+          10
+        );
+        const savedFuture = parseInt(
+          localStorage.getItem('futurePeriods') || '4',
+          10
+        );
+        setTitle(savedTitle);
+        setPastPeriods(savedPast);
+        setFuturePeriods(savedFuture);
+        document.title = savedTitle;
+      });
   }, []);
 
   // Persist title changes
@@ -213,6 +240,11 @@ function App() {
     setTitle(title);
     setPastPeriods(pastPeriods);
     setFuturePeriods(futurePeriods);
+    axios
+      .post('/api/settings', { title, pastPeriods, futurePeriods })
+      .catch((error) => {
+        console.error('There was an error saving settings!', error);
+      });
   };
 
   /**
