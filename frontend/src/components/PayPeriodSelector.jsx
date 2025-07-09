@@ -16,7 +16,7 @@ import { getPayPeriods, calculatePayPeriodIndex } from '../utils/payPeriodUtils'
 import { formatNumber } from '../utils/numberUtils';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 
-function PayPeriodSelector({ bills, setPayPeriod }) {
+function PayPeriodSelector({ bills, setPayPeriod, pastPeriods = 0, futurePeriods = 4 }) {
   const [payPeriods, setPayPeriods] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState('');
   const timeZone = 'America/Los_Angeles';
@@ -24,7 +24,7 @@ function PayPeriodSelector({ bills, setPayPeriod }) {
   const currentIndex = calculatePayPeriodIndex(new Date());
 
   useEffect(() => {
-    const periods = getPayPeriods(bills, 4, 1);
+    const periods = getPayPeriods(bills, futurePeriods + 1, pastPeriods);
     setPayPeriods(periods);
 
     // On first render, select the current pay period
@@ -55,7 +55,7 @@ function PayPeriodSelector({ bills, setPayPeriod }) {
         }
       }
     }
-  }, [bills, selectedIndex, setPayPeriod, currentIndex]);
+  }, [bills, selectedIndex, setPayPeriod, currentIndex, pastPeriods, futurePeriods]);
 
   const handleChange = (event) => {
     const index = event.target.value;
