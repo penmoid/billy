@@ -24,7 +24,7 @@ function PayPeriodSelector({ bills, setPayPeriod }) {
   const currentIndex = calculatePayPeriodIndex(new Date());
 
   useEffect(() => {
-    const periods = getPayPeriods(bills, 3, 1);
+    const periods = getPayPeriods(bills, 4, 1);
     setPayPeriods(periods);
 
     // On first render, select the current pay period
