@@ -37,7 +37,7 @@ function App() {
   const [bills, setBills] = useState([]);
   const [payPeriod, setPayPeriod] = useState([new Date(), new Date()]);
   const [filteredBills, setFilteredBills] = useState([]);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [adjustEFT, setAdjustEFT] = useState(true);
   const [sortOption, setSortOption] = useState('date');
   const [title, setTitle] = useState('Billy');
@@ -162,24 +162,56 @@ function App() {
       });
   }, []);
 
-  // Initialize theme based on localStorage
+  // Initialize theme based on localStorage, defaulting to dark mode
   useEffect(() => {
-    const savedTheme = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(savedTheme);
+    const savedTheme = localStorage.getItem('darkMode');
+    if (savedTheme === null) {
+      setDarkMode(true);
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      setDarkMode(savedTheme === 'true');
+    }
   }, []);
 
-  // Initialize app settings from localStorage
+  // Initialize app settings from server with localStorage fallback
   useEffect(() => {
-    const savedTitle = localStorage.getItem('appTitle') || 'Billy';
-    const savedPast = parseInt(localStorage.getItem('pastPeriods') || '1', 10);
-    const savedFuture = parseInt(
-      localStorage.getItem('futurePeriods') || '4',
-      10
-    );
-    setTitle(savedTitle);
-    setPastPeriods(savedPast);
-    setFuturePeriods(savedFuture);
-    document.title = savedTitle;
+    axios
+      .get('/api/settings')
+      .then((response) => {
+        const data = response.data || {};
+        const fetchedTitle =
+          data.title || localStorage.getItem('appTitle') || 'Billy';
+        const fetchedPast = parseInt(
+          data.pastPeriods || localStorage.getItem('pastPeriods') || '1',
+          10
+        );
+        const fetchedFuture = parseInt(
+          data.futurePeriods || localStorage.getItem('futurePeriods') || '4',
+          10
+        );
+        setTitle(fetchedTitle);
+        setPastPeriods(fetchedPast);
+        setFuturePeriods(fetchedFuture);
+        document.title = fetchedTitle;
+        localStorage.setItem('appTitle', fetchedTitle);
+        localStorage.setItem('pastPeriods', fetchedPast);
+        localStorage.setItem('futurePeriods', fetchedFuture);
+      })
+      .catch(() => {
+        const savedTitle = localStorage.getItem('appTitle') || 'Billy';
+        const savedPast = parseInt(
+          localStorage.getItem('pastPeriods') || '1',
+          10
+        );
+        const savedFuture = parseInt(
+          localStorage.getItem('futurePeriods') || '4',
+          10
+        );
+        setTitle(savedTitle);
+        setPastPeriods(savedPast);
+        setFuturePeriods(savedFuture);
+        document.title = savedTitle;
+      });
   }, []);
 
   // Persist title changes
@@ -213,6 +245,11 @@ function App() {
     setTitle(title);
     setPastPeriods(pastPeriods);
     setFuturePeriods(futurePeriods);
+    axios
+      .post('/api/settings', { title, pastPeriods, futurePeriods })
+      .catch((error) => {
+        console.error('There was an error saving settings!', error);
+      });
   };
 
   /**
@@ -326,28 +363,35 @@ function App() {
     <ThemeProvider theme={darkMode ? draculaTheme : lightTheme}>
       <CssBaseline />
       <Container maxWidth="md" sx={{ padding: 4 }}>
-        {/* Theme & Settings Buttons */}
-        <Box sx={{ float: 'right' }}>
-          <IconButton
-            color="inherit"
-            onClick={handleThemeToggle}
-            aria-label="toggle dark mode"
-          >
-            {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-          </IconButton>
-          <IconButton
-            color="inherit"
-            onClick={handleOpenSettings}
-            aria-label="settings"
-          >
-            <SettingsIcon />
-          </IconButton>
+        {/* Header */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+          }}
+        >
+          <Typography variant="h4" align="left" gutterBottom>
+            {title}
+          </Typography>
+          <Box>
+            <IconButton
+              color="inherit"
+              onClick={handleThemeToggle}
+              aria-label="toggle dark mode"
+            >
+              {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+            <IconButton
+              color="inherit"
+              onClick={handleOpenSettings}
+              aria-label="settings"
+            >
+              <SettingsIcon />
+            </IconButton>
+          </Box>
         </Box>
-
-        {/* Application Title */}
-        <Typography variant="h4" align="center" gutterBottom>
-          {title}
-        </Typography>
 
         {/* Pay Period Selector */}
         <Box my={4}>
