@@ -37,7 +37,7 @@ function App() {
   const [bills, setBills] = useState([]);
   const [payPeriod, setPayPeriod] = useState([new Date(), new Date()]);
   const [filteredBills, setFilteredBills] = useState([]);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [adjustEFT, setAdjustEFT] = useState(true);
   const [sortOption, setSortOption] = useState('date');
   const [title, setTitle] = useState('Billy');
@@ -162,10 +162,15 @@ function App() {
       });
   }, []);
 
-  // Initialize theme based on localStorage
+  // Initialize theme based on localStorage, defaulting to dark mode
   useEffect(() => {
-    const savedTheme = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(savedTheme);
+    const savedTheme = localStorage.getItem('darkMode');
+    if (savedTheme === null) {
+      setDarkMode(true);
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      setDarkMode(savedTheme === 'true');
+    }
   }, []);
 
   // Initialize app settings from server with localStorage fallback
@@ -358,28 +363,35 @@ function App() {
     <ThemeProvider theme={darkMode ? draculaTheme : lightTheme}>
       <CssBaseline />
       <Container maxWidth="md" sx={{ padding: 4 }}>
-        {/* Theme & Settings Buttons */}
-        <Box sx={{ float: 'right' }}>
-          <IconButton
-            color="inherit"
-            onClick={handleThemeToggle}
-            aria-label="toggle dark mode"
-          >
-            {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-          </IconButton>
-          <IconButton
-            color="inherit"
-            onClick={handleOpenSettings}
-            aria-label="settings"
-          >
-            <SettingsIcon />
-          </IconButton>
+        {/* Header */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+          }}
+        >
+          <Typography variant="h4" align="left" gutterBottom>
+            {title}
+          </Typography>
+          <Box>
+            <IconButton
+              color="inherit"
+              onClick={handleThemeToggle}
+              aria-label="toggle dark mode"
+            >
+              {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+            <IconButton
+              color="inherit"
+              onClick={handleOpenSettings}
+              aria-label="settings"
+            >
+              <SettingsIcon />
+            </IconButton>
+          </Box>
         </Box>
-
-        {/* Application Title */}
-        <Typography variant="h4" align="center" gutterBottom>
-          {title}
-        </Typography>
 
         {/* Pay Period Selector */}
         <Box my={4}>
