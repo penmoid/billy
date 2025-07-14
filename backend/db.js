@@ -10,7 +10,7 @@ const dbPath = process.env.DB_PATH || path.join(dataDir, 'bills.db');
 
 const db = new Database(dbPath);
 
-// Initialize table
+// Initialize tables
 const init = `CREATE TABLE IF NOT EXISTS bills (
   id INTEGER PRIMARY KEY,
   name TEXT,
@@ -21,6 +21,10 @@ const init = `CREATE TABLE IF NOT EXISTS bills (
   autoPay INTEGER,
   paymentHistory TEXT,
   dueDate TEXT
+);
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT
 )`;
 
 db.exec(init);

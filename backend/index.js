@@ -133,6 +133,41 @@ app.delete('/api/bills/:id', (req, res) => {
   }
 });
 
+// Get application settings
+app.get('/api/settings', (req, res) => {
+  try {
+    const rows = db.prepare('SELECT key, value FROM settings').all();
+    const settings = {};
+    for (const row of rows) {
+      settings[row.key] = row.value;
+    }
+    res.json(settings);
+  } catch (err) {
+    console.error('Error reading settings:', err);
+    res.json({});
+  }
+});
+
+// Save application settings
+app.post('/api/settings', (req, res) => {
+  const settings = req.body || {};
+  const stmt = db.prepare(
+    'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value'
+  );
+  const transaction = db.transaction((obj) => {
+    for (const [key, value] of Object.entries(obj)) {
+      stmt.run(key, String(value));
+    }
+  });
+  try {
+    transaction(settings);
+    res.json({ message: 'Settings saved successfully.', settings });
+  } catch (err) {
+    console.error('Error saving settings:', err);
+    res.status(500).json({ error: 'Failed to save settings.' });
+  }
+});
+
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 

@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "jest --coverage"
+    "test": "jest --coverage --runInBand"
   },
   "dependencies": {
     "body-parser": "^1.20.3",
