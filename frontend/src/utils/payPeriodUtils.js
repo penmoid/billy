@@ -12,7 +12,7 @@ export function getPayPeriods(bills, numberOfPeriods = 3, previousPeriods = 0) {
   const timeZone = 'America/Los_Angeles';
 
   // Initial payday in Pacific Time
-  const initialPaydayPT = new Date('2024-09-26T00:00:00');
+  const initialPaydayPT = new Date('2024-09-26T00:00:00-07:00');
   const initialPayday = startOfDay(utcToZonedTime(initialPaydayPT, timeZone));
 
   // Today's date in Pacific Time
@@ -95,7 +95,7 @@ export function getPayPeriods(bills, numberOfPeriods = 3, previousPeriods = 0) {
 
 // Function to calculate pay period index based on a date
 export function calculatePayPeriodIndex(date) {
-  const initialPaydayPT = new Date('2024-09-26T00:00:00');
+  const initialPaydayPT = new Date('2024-09-26T00:00:00-07:00');
   const initialPayday = startOfDay(utcToZonedTime(initialPaydayPT, 'America/Los_Angeles'));
   const daysSinceInitial = differenceInCalendarDays(date, initialPayday);
   let payPeriodIndex = Math.floor(daysSinceInitial / 14);
